@@ -1,0 +1,12 @@
+.add-to-fav{
+    display: flex;   
+    flex-direction: row;
+    gap: 10px;
+   }
+
+.add-to-fav i{
+    color: #193952;
+    pointer-events:auto;
+    height: 10px;
+    width: auto;
+}
