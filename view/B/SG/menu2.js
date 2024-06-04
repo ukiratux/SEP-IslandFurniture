@@ -6,6 +6,7 @@ document.write('\
         if(memberEmail == null || memberEmail == "") {\
             document.getElementById("menuLoggedOut").setAttribute("style", "display:block");\
             document.getElementById("menuLoggedIn").setAttribute("style", "display:none");\
+            document.getElementById("favourites").setAttribute("style", "display:none");\
         }\
         else {\
             document.getElementById("menuLoggedOut").setAttribute("style", "display:none");\
@@ -102,6 +103,9 @@ document.write('\
                             <li><a href="/B/' + countryPrefix + '/furnitureCategory.html?cat=Children"><i class="icon icon-map-marker"></i> Children</a></li>\
                         </ul>\
                         <li><a id="retailProductLink"><i class="icon icon-coffee"></i> Retail Products</a></li>\
+                    </li>\
+                    <li id="favourites">\
+                        <a href="/B/' + countryPrefix + '/Favourites.html">Favourites</a>\
                     </li>\
                 </ul>\
             </nav>\
