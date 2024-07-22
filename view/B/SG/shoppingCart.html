@@ -741,7 +741,7 @@
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label class="pull-left">Address: </label>
-                                                                        <input type="text" class="form-control" id="txtAddress"  required>
+                                                                        <input type="text" class="form-control" id="txtAddress" required>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label class="pull-left">Postal Code: </label>
@@ -751,18 +751,22 @@
                                                                         <input style="cursor: pointer; float: left;" type="checkbox" id="saveDetails" value="details" />
                                                                         <label for="saveDetails" style="float: left; padding-left: 9px;">Save current details</label>
                                                                     </div>
+                                                                    <div class="form-group">
+                                                                        <input style="cursor: pointer; float: left;" type="checkbox" id="assemblyService" value="assembly" />
+                                                                        <label for="assemblyService" style="float: left; padding-left: 9px;">Assembly Service</label>
+                                                                    </div>
                                                                 </span>
                                                             </div>
                                                         </form>
                                                         <div style="text-align:left;">* Estimated Delivery Date: <span id="deliveryDate"></span></div><br />
-
+                                            
                                                         <div style="padding-top: 5%;">
                                                             <h4 style="text-align: left">Credit Card Payment Details</h4><br />
                                                             <div id="chooseCardDiv"></div>
                                                             <div id="newCardDiv" style="padding: 10px 15px 0 15px;">
                                                                 <div id="card-element"></div><br />
                                                                 <div style="text-align: left; color: red" id="card-errors" role="alert"></div>
-
+                                            
                                                                 <input style="float:left; cursor: pointer;" type="checkbox" id="saveCard" />
                                                                 <label for="saveCard" style="float: left; padding-left: 9px;">Save card</label>
                                                             </div>

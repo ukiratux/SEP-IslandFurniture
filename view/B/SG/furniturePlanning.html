@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furniture Planner</title>
+    <style>
+
+        #plannerContainer h1 {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #plannerContent {
+            display: flex;
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        #plannerToolbar {
+            width: 20%;
+            padding: 20px;
+        }
+
+        #plannerToolbar h2 {
+            margin-top: 0;
+        }
+
+        .furniture-item {
+            background-color: #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #plannerCanvas {
+            width: 80%;
+            height: 600px;
+            background-color: #fff;
+            margin-left: 20px;
+            position: relative;
+            border: 1px solid #ccc;
+        }
+
+        #plannerCanvas h2 {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <script src="../checkCountry.js"></script>
+    <script src="../../header.js"></script>
+    <div class="body">
+        <script src="menu2.js"></script>
+        <div class="body">
+            <div role="main" class="main">
+                <section class="page-top">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2>Services</h2>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="page-middle">
+                    <div id="plannerContainer">
+                        <h1>Furniture Planner</h1>
+                        <div id="plannerContent">
+                            <div id="plannerToolbar">
+                                <h2>Furniture Items</h2>
+                                <div class="furniture-item" draggable="true" id="chair">Chair</div>
+                                <div class="furniture-item" draggable="true" id="table">Table</div>
+                                <div class="furniture-item" draggable="true" id="sofa">Sofa</div>
+                                <div class="furniture-item" draggable="true" id="bathroom">Bathroom</div>
+                                <div class="furniture-item" draggable="true" id="bed">Bed</div>
+                                <div class="furniture-item" draggable="true" id="cabinet">Cabinet</div>
+                                <div class="furniture-item" draggable="true" id="study-table">Study Table</div>
+                                <div class="furniture-item" draggable="true" id="children-furniture">Children Furniture</div>
+                            </div>
+                            <div id="plannerCanvas">
+                                <h2>Room Layout</h2>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <script src="../footer.js"></script>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const furnitureItems = document.querySelectorAll('.furniture-item');
+            const canvas = document.getElementById('plannerCanvas');
+
+            furnitureItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+            });
+
+            canvas.addEventListener('dragover', handleDragOver);
+            canvas.addEventListener('drop', handleDrop);
+
+            function handleDragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.id);
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text');
+                const item = document.getElementById(id);
+                const clone = item.cloneNode(true);
+
+                const canvasRect = canvas.getBoundingClientRect();
+                const x = e.clientX - canvasRect.left;
+                const y = e.clientY - canvasRect.top;
+
+                clone.style.position = 'absolute';
+                clone.style.left = `${x}px`;
+                clone.style.top = `${y}px`;
+
+                // Ensure the item stays within the canvas boundaries
+                const maxX = canvas.offsetWidth - item.offsetWidth;
+                const maxY = canvas.offsetHeight - item.offsetHeight;
+                clone.style.left = `${Math.min(x, maxX)}px`;
+                clone.style.top = `${Math.min(y, maxY)}px`;
+
+                clone.setAttribute('draggable', 'false');
+                canvas.appendChild(clone);
+            }
+        });
+    </script>
+</body>
+</html>

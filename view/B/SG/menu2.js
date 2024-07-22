@@ -101,10 +101,25 @@ document.write('\
                             <li><a href="/B/' + countryPrefix + '/furnitureCategory.html?cat=Study"><i class="icon icon-map-marker"></i> Study</a></li>\
                             <li><a href="/B/' + countryPrefix + '/furnitureCategory.html?cat=Children"><i class="icon icon-map-marker"></i> Children</a></li>\
                         </ul>\
-                        <li><a id="retailProductLink"><i class="icon icon-coffee"></i> Retail Products</a></li>\
+                    </li>\
+                    <li><a id="retailProductLink"><i class="icon icon-coffee"></i> Retail Products</a></li>\
+                    <li id="favourites" style="display:none;"><a href="/B/' + countryPrefix + '/Favourites.html">Favourites</a></li>\
+                    <li>\
+                        <a href="/B/' + countryPrefix + '/ourServices.html">Our Services</a>\
+                    </li>\
+                    <li>\
+                        <a href="/B/' + countryPrefix + '/furniturePlanning.html">Furniture Planner</a>\
                     </li>\
                 </ul>\
             </nav>\
         </div>\
     </div>\
 </header>');
+
+// Show "Favourites" link if user is logged in
+document.addEventListener("DOMContentLoaded", function() {
+    var memberEmail = sessionStorage.getItem("memberEmail");
+    if (memberEmail && memberEmail !== "") {
+        document.getElementById("favourites").style.display = "block";
+    }
+});
