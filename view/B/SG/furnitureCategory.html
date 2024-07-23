@@ -1,4 +1,4 @@
-<script src="../checkCountry.js" ></script>
+<script src="../checkCountry.js"></script>
 <html>
     <script src="../../header.js"></script>
     <body>
@@ -15,9 +15,9 @@
                     return response.json();
                 }).then(function (data) {
                     var htmlTxt = '';
-                   
-                        var furniture = data[0];
-                        //generate html for furnitures
+                    console.log(data);
+                    data.forEach(function(furniture) {
+                        //generate html for each furniture item
                         htmlTxt += '\
                             <li class="col-md-3 col-sm-6 col-xs-12 product" style="padding-bottom: 1%;padding-top: 2%;">\
                                 <span class="product-thumb-info">\
@@ -56,6 +56,7 @@
                                 '\')">Add To Cart</button>';
                         }
                         htmlTxt += '</span></span></li>';
+                    });
                    
                     document.getElementById("furnituresDisplay").innerHTML = htmlTxt;
                     document.getElementById("categoryTitle").innerHTML = cat;
