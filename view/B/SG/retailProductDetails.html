@@ -1,132 +1,211 @@
 <script src="../checkCountry.js" ></script>
 <html>
     <script src="../../header.js"></script>
+    <script src="AddToFavourite.js"></script>
+    <link rel="stylesheet" href="../css/custom.css">
     <body>
-        <script>
-            var countryPrefix = localStorage.getItem('urlPrefix');
-            //get sku from query parameter
-            var currentUrl = new URL(window.location.href);
-            var sku = currentUrl.searchParams.get("sku");
-            var memberEmail = sessionStorage.getItem('memberEmail');
-            if(sku == null || sku == '') {
-                window.location.href = '/B/' + countryPrefix + '/index.html';
+<body>
+    <script>
+        var countryPrefix = localStorage.getItem('urlPrefix');
+        //get sku from query parameter
+        var currentUrl = new URL(window.location.href);
+        var sku = currentUrl.searchParams.get("sku");
+        var memberEmail = sessionStorage.getItem('memberEmail');
+        if(sku == null || sku == '') {
+            window.location.href = '/B/' + countryPrefix + '/index.html';
+        }
+        var countryId = localStorage.getItem('countryId');
+        fetch(new Request('/api/getRetailProductBySku?sku=' + sku + '&countryId=' + countryId, {
+            method: 'GET'
+        })).then(function (response) {
+            return response.json();
+        }).then(function (product) {
+            //set retail product details
+            document.getElementById("productImg").setAttribute('src', product.imageURL);
+            document.getElementById("productCategory").innerHTML = product.category;
+            document.getElementById("productCategory").setAttribute('href', '/B/' + countryPrefix
+                + '/retailProductsCategory.html?cat=' + encodeURIComponent(product.category));
+            var formattedPrice = '$' + product.price.toFixed(2);
+            document.getElementById("productPrice").innerHTML = formattedPrice;
+            document.getElementById("productPrice").setAttribute('href', '/B/' + countryPrefix
+                + '/furnitureCategory.html?cat=' + encodeURIComponent(product.price));
+            document.getElementById("productName").innerHTML = product.name;
+            document.getElementById("productName").setAttribute('href', '/B/' + countryPrefix
+                + '/retailProductsCategory.html?cat=' + encodeURIComponent(product.name));
+            document.getElementById("productDesc").innerHTML = product.description;
+            document.getElementById("productDesc").setAttribute('href', '/B/' + countryPrefix
+                + '/retailProductsCategory.html?cat=' + encodeURIComponent(product.description));
+
+            // Check if the user is logged in and display "Add to Cart" and "Add to Favorites" buttons
+            if (memberEmail != null && memberEmail != '') {
+                document.getElementById("addToCartBtn").innerHTML = '<button class="btn btn-primary" onclick="addToCart(\''
+                    + product.sku + '\',\'' + product.id + '\',' + product.price + ',\'' + product.name + '\',\''
+                    + product.imageURL + '\')">Add To Cart</button>';
+
+                    document.getElementById("addToFavorites").style.display = "flex";
+            } else {
+                    document.getElementById("addToFavorites").style.display = "none";
+                }
+
+            var selectOptions = '<option></option>';
+            var storeID = currentUrl.searchParams.get("storeID");
+            var storesInCountry = JSON.parse(localStorage.getItem('storesInCountry'));
+            for (i = 0; i < storesInCountry.length; i++) {
+                var store = storesInCountry[i];
+                if(store.id == storeID) {
+                    selectOptions += '<option selected value="' + store.id + '">' + store.name + '</option>';
+                }
+                else {
+                    selectOptions += '<option value="' + store.id + '">' + store.name + '</option>';
+                }
             }
-            var countryId = localStorage.getItem('countryId');
-            fetch(new Request('/api/getRetailProductBySku?sku=' + sku + '&countryId=' + countryId,
-                {
+            document.getElementById("storeID").innerHTML = selectOptions;
+
+            var quantityDivTxt = 'Status: ';
+            var itemQty = currentUrl.searchParams.get("itemQty");
+            if(itemQty != null) {
+                quantityDivTxt += itemQty > 0 ? 'Available':'Unavailable';
+                quantityDivTxt += '<br/>Remaining Qty: ' + itemQty;
+                document.getElementById("quantityDiv").innerHTML = '\
+                    <div class="col-md-6">\
+                        ' + quantityDivTxt + '\
+                    </div>';
+            }
+        }).catch(function(error) {
+            console.log(error);
+        });
+
+        function CheckItemAvail() {
+            var storeId = document.getElementById("storeID").value;
+            if(storeId != null && storeId != '') {
+                fetch(new Request('/api/getItemQuantity?sku=' + sku + '&storeId=' + storeId, {
                     method: 'GET'
                 })).then(function (response) {
                     return response.json();
-                }).then(function (product) {
-                    //set retail product details
-                    document.getElementById("productImg").setAttribute('src', product.imageURL);
-
-                    document.getElementById("productCategory").innerHTML = product.category;
-                    document.getElementById("productCategory").setAttribute('href', '/B/' + countryPrefix
-                        + '/retailProductsCategory.html?cat=' + encodeURIComponent(product.category));
-
-                    var selectOptions = '<option></option>';
-                    var storeID = currentUrl.searchParams.get("storeID");
-                    var storesInCountry = JSON.parse(localStorage.getItem('storesInCountry'));
-                    for (i = 0; i < storesInCountry.length; i++) {
-                        var store = storesInCountry[i];
-                        if(store.id == storeID) {
-                            selectOptions += '<option selected value="' + store.id + '">' + store.name + '</option>';
-                        }
-                        else {
-                            selectOptions += '<option value="' + store.id + '">' + store.name + '</option>';
-                        }
+                }).then(function (data) {
+                    var quantity = data[0].sum;
+                    if(quantity == null || quantity == '') {
+                        quantity = 0;
                     }
-                    document.getElementById("storeID").innerHTML = selectOptions;
-
-                    var quantityDivTxt = 'Status: ';
-                    var itemQty = currentUrl.searchParams.get("itemQty");
-                    if(itemQty != null) {
-                        quantityDivTxt += itemQty > 0 ? 'Available':'Unavailable';
-                        quantityDivTxt += '<br/>Remaining Qty: ' + itemQty;
-                        document.getElementById("quantityDiv").innerHTML = '\
-                            <div class="col-md-6">\
-                                ' + quantityDivTxt + '\
-                            </div>';
-                    }
+                    //refresh page with item's quantity in the query parameter to display to the user
+                    var url = window.location.origin + window.location.pathname;
+                    window.location.href = url + '?sku=' + sku + '&itemQty=' + quantity + '&storeID=' + storeId;
                 }).catch(function(error) {
                     console.log(error);
                 });
+            }
+        }
 
-            function CheckItemAvail() {
-                var storeId = document.getElementById("storeID").value;
-                if(storeId != null && storeId != '') {
-                    fetch(new Request('/api/getItemQuantity?sku=' + sku + '&storeId=' + storeId,
-                    {
-                        method: 'GET'
-                    })).then(function (response) {
-                        return response.json();
-                    }).then(function (data) {
-                        var quantity = data[0].sum;
-                        if(quantity == null || quantity == '') {
-                            quantity = 0;
-                        }
-                        //refresh page with item's quantity in the query parameter to display to the user
+        function addToCart(sku, id, price, name, imageURL) {
+    fetch(new Request('/api/getItemQuantity?sku=' + sku + '&storeId=-1', {
+        method: 'GET'
+    })).then(function (response) {
+        return response.json();
+    }).then(function (data) {
+        console.log("Retail API Response:", data);
+        var quantity = data[0].sum;
+        if (quantity == null || quantity == '') {
+            var url = window.location.origin + window.location.pathname;
+            window.location.href = url + '?sku=' + sku + '&errMsg=Item not added to cart, not enough quantity available.';
+        } else {
+            var shoppingCart = JSON.parse(sessionStorage.getItem('shoppingCart')) || [];
+            var itemExists = false;
+
+            for (var i = 0; i < shoppingCart.length; i++) {
+                if (shoppingCart[i].sku === sku) {
+                    if (shoppingCart[i].quantity < quantity) {
+                        shoppingCart[i].quantity += 1;
+                    } else {
                         var url = window.location.origin + window.location.pathname;
-                        window.location.href = url + '?sku=' + sku + '&itemQty=' + quantity + '&storeID=' + storeId;
-                    }).catch(function(error) {
-                        console.log(error);
-                    });
+                        window.location.href = url + '?sku=' + sku + '&errMsg=Item not added to cart, not enough quantity available.';
+                        return;
+                    }
+                    itemExists = true;
+                    break;
                 }
             }
-        </script>
+
+            if (!itemExists) {
+                shoppingCart.push({
+                    id: id,
+                    sku: sku,
+                    price: price,
+                    name: name,
+                    imgURL: imageURL,
+                    quantity: 1
+                });
+            }
+
+            sessionStorage.setItem('shoppingCart', JSON.stringify(shoppingCart));
+            window.location.href = '/B/' + countryPrefix + '/shoppingCart.html';
+        }
+    }).catch(function (error) {
+        console.log("Error in Retail addToCart:", error);
+    });
+}
+
+
+    </script>
+
+    <div class="body">
+        <script src="menu2.js"></script>
         <div class="body">
-            <script src="menu2.js"></script>
-            <div class="body">
-                <div role="main" class="main">
-                    <section class="page-top">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h2>Retail Products</h2>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+            <div role="main" class="main">
+                <section class="page-top">
                     <div class="container">
-                        <hr class="tall">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div>
-                                    <div class="thumbnail">
-                                        <img alt="" class="img-responsive img-rounded" id="productImg">
-                                    </div>
-                                </div>
+                            <div class="col-md-12">
+                                <h2>Retail Products</h2>
                             </div>
-
-                            <div class="col-md-6">
-                                <div class="summary entry-summary">
-                                    <h2 class="shorter"><strong id="productName"></strong></h2>
-                                    <p class="price"><h4 class="amount" id="productPrice"></h4></p>
-                                    <strong>Description</strong>
-                                    <p class="taller" id="productDesc"></p>
-                                    <div class="product_meta">
-                                        <span class="posted_in">Category: <a rel="tag" id="productCategory"></a></span>
-                                    </div>
-                                    <br/><br/>
-
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <form onsubmit="return false;">
-                                                View Item Availability<br/>
-                                                <select style="color: black;" name="storeID" id="storeID"></select><br/><br/>
-                                                <input type="submit" onclick="CheckItemAvail()" class="btn btn-primary btn-icon" value="Check Item Availability"/>
-                                            </form>
-                                        </div>
-                                        <div id="quantityDiv"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr class="tall">
                         </div>
                     </div>
+                </section>
+                <div class="container">
+                    <hr class="tall">
+                    <div class="row">
+                        <script src="/displayMessageLong.js"></script>
+                        <div class="row">
+                        <div class="col-md-6">
+                            <div>
+                                <div class="thumbnail">
+                                    <img alt="" class="img-responsive img-rounded" id="productImg">
+                                </div>
+                                <div class="add-to-fav" id="addToFavorites">
+                                    <h5>Add to Favorites</h5>
+                                    <i class="fa fa-heart unfavourited"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="summary entry-summary">
+                                <h2 class="shorter"><strong id="productName"></strong></h2>
+                                <p class="price"><h4 class="amount" id="productPrice"></h4></p>
+                                <strong>Description</strong>
+                                <p class="taller" id="productDesc"></p>
+                                <div class="product_meta">
+                                    <span class="posted_in">Category: <a rel="tag" id="productCategory"></a></span>
+                                </div>
+                                <br/><br/></div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <form onsubmit="return false;">
+                                            View Item Availability<br/>
+                                            <select style="color: black;" name="storeID" id="storeID"></select><br/><br/>
+                                            <input type="submit" onclick="CheckItemAvail()" class="btn btn-primary btn-icon" value="Check Item Availability" style="margin-bottom: 5px;"/>
+                                            <div id="addToCartBtn"></div>
+                                        </form>
+                                    </div>
+                                    <div id="quantityDiv"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="tall">
                 </div>
-                <script src="../footer.js"></script>
             </div>
-    </body>
+        </div>
+    </div>
+</body>
 </html>

@@ -26,19 +26,42 @@
                     document.getElementById("addToCartBtn").innerHTML = '<button class="btn btn-primary" onclick="addToCart(\''
                         + furniture.sku + '\',\'' + furniture.id + '\',' + furniture.price + ',\'' + furniture.name + '\',\''
                         + furniture.imageURL + '\')">Add To Cart</button>';
-                    
-                    document.getElementById("buyNowBtn").innerHTML = '<button class="btn btn-danger" onclick="buyNow(\''
-                        + furniture.sku + '\',\'' + furniture.id + '\',' + furniture.price + ',\'' + furniture.name + '\',\''
-                        + furniture.imageURL + '\')">Buy Now!</button>';
 
                     document.getElementById("addToFavorites").style.display = "flex";
                 } else {
                     document.getElementById("addToFavorites").style.display = "none";
                 }
+                document.getElementById("furnitureName").innerHTML = furniture.name;
+                document.getElementById("furnitureName").setAttribute('href', '/B/' + countryPrefix
+                + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.name));
+
+                document.getElementById("descriptionLink").innerHTML = furniture.description;
+                document.getElementById("descriptionLink").setAttribute('href', '/B/' + countryPrefix
+                + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.description));
 
                 document.getElementById("categoryLink").innerHTML = furniture.category;
                 document.getElementById("categoryLink").setAttribute('href', '/B/' + countryPrefix
                     + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.category));
+
+                var formattedPrice = '$' + furniture.price.toFixed(2);
+                document.getElementById("priceLink").innerHTML = formattedPrice;
+                document.getElementById("priceLink").setAttribute('href', '/B/' + countryPrefix
+                    + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.price));
+
+                var Height = 'Height: ' + furniture.height;
+                document.getElementById("heightLink").innerHTML = Height;
+                document.getElementById("heightLink").setAttribute('href', '/B/' + countryPrefix
+                    + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.height));
+
+                var Width = 'Width: ' + furniture.width;
+                document.getElementById("widthLink").innerHTML = Width;
+                document.getElementById("widthLink").setAttribute('href', '/B/' + countryPrefix
+                    + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.width));
+
+                var Length = 'Length: ' + furniture.length;
+                document.getElementById("lengthLink").innerHTML = Length;
+                document.getElementById("lengthLink").setAttribute('href', '/B/' + countryPrefix
+                    + '/furnitureCategory.html?cat=' + encodeURIComponent(furniture.length));
 
                 var selectOptions = '<option></option>';
                 var storeID = currentUrl.searchParams.get("storeID");
@@ -89,7 +112,7 @@
                 }
             }
 
-            function buyNow(sku, id, price, name, imageURL) {
+            function addToCart(sku, id, price, name, imageURL) {
                 fetch(new Request('/api/getItemQuantity?sku=' + sku + '&storeId=-1', {
                     method: 'GET'
                 })).then(function (response) {
@@ -166,12 +189,13 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="summary entry-summary">
-                                    <div id="buyNowBtn" style="margin-bottom: 5px;"></div>
                                     <h2 class="shorter"><strong id="furnitureName"></strong></h2>
-                                    <div id="addToCartBtn"></div>
-                                    <p class="price"><h4 class="amount" id="price"></h4></p>
+                                    <p class="price"><h4 class="amount" id="priceLink"></h4></p>
                                     <strong>Description</strong>
-                                    <p class="taller" id="description"></p>
+                                    <p class="taller" id="descriptionLink"></p>
+                                    <p class="height" id="heightLink"></p>
+                                    <p class="width"id="widthLink"></p>
+                                    <p class="length"id="lengthLink"></p>
                                     <p id="furnitureInfo"></p>
                                     <div class="product_meta">
                                         <span class="posted_in">Category: <a id="categoryLink" rel="tag"></a></span>
@@ -183,7 +207,8 @@
                                             <form onsubmit="return false;">
                                                 View Item Availability<br/>
                                                 <select style="color: black;" name="storeID" id="storeID"></select><br/><br/>
-                                                <input type="submit" onclick="CheckItemAvail()" class="btn btn-primary btn-icon" value="Check Item Availability"/>
+                                                <input type="submit" onclick="CheckItemAvail()" class="btn btn-primary btn-icon" value="Check Item Availability" style="margin-bottom: 5px;"/>
+                                                <div id="addToCartBtn"></div>
                                             </form>
                                         </div>
                                         <div id="quantityDiv"></div>
