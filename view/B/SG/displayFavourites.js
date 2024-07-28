@@ -1,65 +1,22 @@
-// document.addEventListener("DOMContentLoaded", function() {
-//     var favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-//     var countryId = localStorage.getItem("countryId");
-//     console.log(favorites);
-
-//     //get furniture by sku from favorites
-//     favorites.forEach(function(favorite) {
-//         var url = "/api/getFurnitureBySku" + "?sku=" + favorite + "&countryId=" + countryId;
-//         fetch(url)
-//             .then((res) => res.json())
-//             .then((data) => {
-//                 console.log(data);
-//                 var htmlTxt = '';
-                   
-//                         var furniture = data[0];
-//                         //generate html for furnitures
-//                         htmlTxt += '\
-//                             <li class="col-md-3 col-sm-6 col-xs-12 product" style="padding-bottom: 1%;padding-top: 2%;">\
-//                                 <span class="product-thumb-info">\
-//                                     <span class="product-thumb-info-image">\
-//                                         <span class="product-thumb-info-act">\
-//                                             <span class="product-thumb-info-act-left">\
-//                                                 <a href="furnitureProductDetails.html?sku=' + furniture.sku + '" style="color: white"><em>View Details</em></a>\
-//                                             </span>\
-//                                         </span>\
-//                                         <img alt=""  class="img-responsive" src="' + furniture.imageURL + '">\
-//                                     </span>\
-//                                     <span class="product-thumb-info-content">\
-//                                         <h4>' + furniture.name + '</h4>\
-//                                         <span class="product-thumb-info-act-left">\
-//                                             <em>Height: ' + furniture.height + '</em>\
-//                                         </span><br/>\
-//                                         <span class="product-thumb-info-act-left">\
-//                                             <em>Length: ' + furniture.length + '</em>\
-//                                         </span><br/>\
-//                                         <span class="product-thumb-info-act-left">\
-//                                             <em>Width: ' + furniture.width + '</em>\
-//                                         </span><br/>\
-//                                         <span class="product-thumb-info-act-left">\
-//                                             <em>Price: $' + furniture.price + '.00</em>\
-//                                         </span><br/>\
-//                                         <form action="furnitureProductDetails.html">\
-//                                             <input type="hidden" name="sku" value="' + furniture.sku + '"/>\
-//                                             <input type="submit" class="btn btn-primary btn-block" value="More Details"/>\
-//                                         </form>';
-//             })
-//             .catch((err) => console.log(err));
-//     });
-// }
-
-// )
-
-
 document.addEventListener("DOMContentLoaded", function() {
     var favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     var countryId = localStorage.getItem("countryId");
     var htmlTxt = '';
+    console.log(favorites);
 
     if (favorites.length > 0) {
         // Fetch details for each favorite SKU
         var fetchPromises = favorites.map(function(favorite) {
-            var url = "/api/getFurnitureBySku?sku=" + encodeURIComponent(favorite) + "&countryId=" + countryId;
+            var url;
+            if (favorite.startsWith('F')) {
+                url = "/api/getFurnitureBySku?sku=" + encodeURIComponent(favorite) + "&countryId=" + countryId;
+            } else if (favorite.startsWith('R')) {
+                url = "/api/getRetailProductBySku?sku=" + encodeURIComponent(favorite) + "&countryId=" + countryId;
+            } else {
+                console.log(`Unknown SKU type: ${favorite}`);
+                return;
+            }
+
             return fetch(url)
                 .then((res) => {
                     if (!res.ok) {
@@ -72,45 +29,67 @@ document.addEventListener("DOMContentLoaded", function() {
                         console.log(`No data returned for SKU: ${favorite}`);
                         return;
                     }
-                    var furniture = data;
-                    console.log(furniture);
-                    if (!furniture || !furniture.sku) {
+                    var item = data;
+                    console.log(item);
+                    if (!item || !item.sku) {
                         console.log(`Invalid data structure: ${JSON.stringify(data)}`);
                         return;
                     }
-                    // Generate HTML for each piece of furniture
+
+                    // Generate HTML for each item
                     htmlTxt += `
                         <li class="col-md-3 col-sm-6 col-xs-12 product" style="padding-bottom: 1%;padding-top: 2%;">
                             <span class="product-thumb-info">
                                 <span class="product-thumb-info-image">
                                     <span class="product-thumb-info-act">
                                         <span class="product-thumb-info-act-left">
-                                            <a href="furnitureProductDetails.html?sku=${furniture.sku}" style="color: white"><em>View Details</em></a>
+                                            <a href="${favorite.startsWith('F') ? 'furnitureProductDetails.html' : 'retailProductDetails.html'}?sku=${item.sku}" style="color: white"><em>View Details</em></a>
                                         </span>
                                     </span>
-                                    <img alt="" class="img-responsive" src="${furniture.imageURL}">
+                                    <img alt="" class="img-responsive" src="${item.imageURL}">
                                 </span>
                                 <span class="product-thumb-info-content">
-                                    <h4>${furniture.name}</h4>
+                                    <h4>${item.name}</h4>`;
+
+                    if (favorite.startsWith('F')) {
+                        htmlTxt += `
                                     <span class="product-thumb-info-act-left">
-                                        <em>Height: ${furniture.height}</em>
+                                        <em>Height: ${item.height || 'N/A'}</em>
                                     </span><br/>
                                     <span class="product-thumb-info-act-left">
-                                        <em>Length: ${furniture.length}</em>
+                                        <em>Length: ${item.length || 'N/A'}</em>
                                     </span><br/>
                                     <span class="product-thumb-info-act-left">
-                                        <em>Width: ${furniture.width}</em>
+                                        <em>Width: ${item.width || 'N/A'}</em>
                                     </span><br/>
                                     <span class="product-thumb-info-act-left">
-                                        <em>Price: $${furniture.price}.00</em>
+                                        <em>Price: $${item.price}.00</em>
+                                    </span><br/>`;
+
+                    }
+                    if (favorite.startsWith('R')) {
+                        htmlTxt += `
+                                    <span class="product-thumb-info-act-left">
+                                        <em>Category: ${item.category || 'N/A'}</em>
                                     </span><br/>
-                                    <form class="more" action="furnitureProductDetails.html">
-                                        <input type="hidden" name="sku" value="${furniture.sku}"/>
+                                    <span class="product-thumb-info-act-left">
+                                        <em>Price: $${item.price}.00</em>
+                                    </span><br/>
+                                    <span class="product-thumb-info-act-left">
+                                        <em style="visibility:hidden;">Hidden</em>
+                                    </span><br/>
+                                    <span class="product-thumb-info-act-left">
+                                        <em style="visibility:hidden;">Hidden</em>
+                                    </span><br/>`;
+                    }
+                    htmlTxt += `
+                                    <form class="more" action="${favorite.startsWith('F') ? 'furnitureProductDetails.html' : 'retailProductDetails.html'}">
+                                        <input type="hidden" name="sku" value="${item.sku}"/>
                                         <input type="submit" class="btn btn-primary btn-block" value="More Details"/>
                                     </form>`;
                     var memberEmail = sessionStorage.getItem('memberEmail');
                     if (memberEmail) {
-                        htmlTxt += `<button class="btn btn-primary btn-block" onclick="addToCart('${furniture.sku}', '${furniture.id}', ${furniture.price}, '${furniture.name}', '${furniture.imageURL}')">Add To Cart</button>`;
+                        htmlTxt += `<button class="btn btn-primary btn-block" onclick="addToCart('${item.sku}', '${item.id}', ${item.price}, '${item.name}', '${item.imageURL}')">Add To Cart</button>`;
                     }
                     htmlTxt += `</span></span></li>`;
                 })
